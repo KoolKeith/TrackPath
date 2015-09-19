@@ -111,13 +111,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (lastLocation != null) {
             double haversineDist = haversine(lastLocation.getLatitude(), lastLocation.getLongitude(), location.getLatitude(), location.getLongitude());
-            ((TextView) findViewById(R.id.textView3)).setText(nf.format(haversineDist));
-            double altD = (lastLocation.getAltitude() - location.getAltitude()) / 1000.0;
-            ((TextView) findViewById(R.id.textView5)).setText(nfm.format(altD));
+            totPath += haversineDist;
+            ((TextView) findViewById(R.id.textView3)).setText(nf.format(totPath));
         }
         Date curDate = new Date();
         long timeDiff = curDate.getTime() - startTime.getTime();
         ((TextView) findViewById(R.id.textView7)).setText(tdf.format(new Date(timeDiff)));
+        if (location.getAltitude() < minAlt)
+            minAlt = location.getAltitude();
+        if (location.getAltitude() > maxAlt)
+            maxAlt = location.getAltitude();
+        double altD = (maxAlt - minAlt) / 1000.0;
+        ((TextView) findViewById(R.id.textView5)).setText(nfm.format(altD));
 
         lastLocation = location;
 
@@ -132,13 +137,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         } catch (SAXException e) {
-            Log.e("onLocationChanged", e.getStackTrace().toString());
+            Log.e("onLocationChanged", e.getMessage());
             return;
         } catch (IOException e) {
-            Log.e("onLocationChanged", e.getStackTrace().toString());
+            Log.e("onLocationChanged", e.getMessage());
             return;
         } catch (ParserConfigurationException e) {
-            Log.e("onLocationChanged", e.getStackTrace().toString());
+            Log.e("onLocationChanged", e.getMessage());
             return;
         }
 
@@ -155,11 +160,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TransformerFactory.newInstance().newTransformer()
                     .transform(new DOMSource(doc), new StreamResult(outputFile));
         } catch (TransformerConfigurationException e) {
-            Log.e("onLocationChanged", e.getStackTrace().toString());
-            return;
+            Log.e("onLocationChanged", e.getMessage());
         } catch (TransformerException e) {
-            Log.e("onLocationChanged", e.getStackTrace().toString());
-            return;
+            Log.e("onLocationChanged", e.getMessage());
         }
     }
 
