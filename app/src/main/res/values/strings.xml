@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">TrackPath</string>
-
-    <string name="main_label">--</string>
-    <string name="action_settings">Settings</string>
-    <string name="label_dist">Distance (km)</string>
-    <string name="label_elTime">Elapsed time</string>
-    <string name="label_altD">Max altitude difference (m)</string>
-</resources>
