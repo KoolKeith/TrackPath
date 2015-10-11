@@ -1,66 +1,88 @@
 package personal.free.trackpath;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
-import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A simple main window with the initialization button and position visualization.
  *
  */
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, LocationListener {
+public class MainActivity extends Activity implements View.OnClickListener {
+    private TrackerService mTrackerService;
+    private boolean mBound = false;
+    private Timer timer;
 
-    @SuppressLint("SimpleDateFormat")
-    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+//    @SuppressLint("SimpleDateFormat")
+//    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
     @SuppressLint("SimpleDateFormat")
     private final SimpleDateFormat tdf = new SimpleDateFormat("HH:mm:ss");
     private final NumberFormat nf = new DecimalFormat("#0.000");
     private final NumberFormat nfm = new DecimalFormat("#0.##");
-    private final String outputFile = "/storage/sdcard/Download/a.xml";
-
-    private Date startTime;
-    private double totPath;
-    private double minAlt;
-    private double maxAlt;
-    private Location lastLocation;
+//    private final String outputFile = "/storage/sdcard/Download/a.xml";
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        intent = new Intent(this.getApplicationContext(), TrackerService.class);
         setContentView(R.layout.activity_main);
-
         findViewById(R.id.button).setOnClickListener(this);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startTimer();
+    }
+
+    private void startTimer() {
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (mTrackerService != null && mTrackerService.isRunning()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((TextView) findViewById(R.id.textView3)).setText(nf.format(mTrackerService.getTotPath()));
+                            ((TextView) findViewById(R.id.textView5)).setText(nfm.format(mTrackerService.getAltD()));
+                            ((TextView) findViewById(R.id.textView7)).setText(tdf.format(new Date(mTrackerService.getTimeDiff())));
+                        }
+                    });
+                }
+            }
+        };
+
+        timer.schedule(timerTask, 1000, 1000);
+    }
+
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 
     @Override
@@ -89,110 +111,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
 
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (((Button) findViewById(R.id.button)).getText().toString().equals("Start")) {
             // Start monitor
-            ((Button) findViewById(R.id.button)).setText("Stop");
-
-            startTime = new Date();
-            totPath = 0.0;
-            minAlt = 1e30;
-            maxAlt = -1e30;
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0L, this);
+            ((Button) findViewById(R.id.button)).setText(R.string.stopLabel);
+            startTimer();
+            bindService(intent, mConnection, BIND_AUTO_CREATE);
         } else {
-            ((Button) findViewById(R.id.button)).setText("Start");
-
-            locationManager.removeUpdates(this);
-        }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        String txt = locationString(location);
-        Log.v("onLocationChanged", txt);
-        Toast.makeText(this, txt, Toast.LENGTH_SHORT).show();
-        ((TextView) findViewById(R.id.textView)).setText(txt);
-
-        if (lastLocation != null) {
-            double haversineDist = haversine(lastLocation.getLatitude(), lastLocation.getLongitude(), location.getLatitude(), location.getLongitude());
-            totPath += haversineDist;
-            ((TextView) findViewById(R.id.textView3)).setText(nf.format(totPath));
-        }
-        Date curDate = new Date();
-        long timeDiff = curDate.getTime() - startTime.getTime();
-        ((TextView) findViewById(R.id.textView7)).setText(tdf.format(new Date(timeDiff)));
-        if (location.getAltitude() < minAlt)
-            minAlt = location.getAltitude();
-        if (location.getAltitude() > maxAlt)
-            maxAlt = location.getAltitude();
-        double altD = (maxAlt - minAlt) / 1000.0;
-        ((TextView) findViewById(R.id.textView5)).setText(nfm.format(altD));
-
-        lastLocation = location;
-
-        File aFile = new File(outputFile);
-        Document doc;
-        try {
-            if (aFile.exists()) {
-                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(outputFile);
-            } else {
-                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-                doc.appendChild(doc.createElement("positions"));
-
+            ((Button) findViewById(R.id.button)).setText(R.string.startLabel);
+            stopTimer();
+            if (mBound) {
+                unbindService(mConnection);
+                mBound = false;
             }
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            Log.e("onLocationChanged", e.getMessage());
-            return;
-        }
-
-        // Update archive xml
-        Element root = doc.getDocumentElement();
-        Element pos = doc.createElement("position");
-        pos.setAttribute("date", sdf.format(curDate));
-        pos.setAttribute("lon", Double.toString(location.getLongitude()));
-        pos.setAttribute("lat", Double.toString(location.getLatitude()));
-        pos.setAttribute("alt", Double.toString(location.getAltitude()));
-        root.appendChild(pos);
-
-        try {
-            TransformerFactory.newInstance().newTransformer()
-                    .transform(new DOMSource(doc), new StreamResult(outputFile));
-        } catch (TransformerException e) {
-            Log.e("onLocationChanged", e.getMessage());
         }
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("onStatusChanged", provider + " " + status);
-    }
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            TrackerService.LocalBinder binder = (TrackerService.LocalBinder) service;
+            mTrackerService = binder.getService();
+            mBound = true;
+        }
 
-    @Override
-    public void onProviderEnabled(String provider) {
-        Log.d("onProviderEnabled", provider);
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Log.d("onProviderDisabled", provider);
-    }
-
-    private String locationString(Location location) {
-        return (location==null)?"Unknown"
-                :"Lat: "+location.getLatitude()
-                +"  Lon: "+location.getLongitude()
-                +"  Alt: "+location.getAltitude();
-    }
-
-    private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        final double EarthR = 6372.8; // In kilometers
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        lat1 = Math.toRadians(lat1);
-        lat2 = Math.toRadians(lat2);
-
-        double a = Math.pow(Math.sin(dLat / 2),2) + Math.pow(Math.sin(dLon / 2),2) * Math.cos(lat1) * Math.cos(lat2);
-        double c = 2 * Math.asin(Math.sqrt(a));
-        return EarthR * c;
-    }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBound = false;
+            mTrackerService = null;
+        }
+    };
 }

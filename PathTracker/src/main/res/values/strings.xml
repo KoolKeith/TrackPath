@@ -6,4 +6,6 @@
     <string name="label_dist">Distance (km)</string>
     <string name="label_elTime">Elapsed time</string>
     <string name="label_altD">Max altitude difference (m)</string>
+    <string name="startLabel">Start</string>
+    <string name="stopLabel">Stop</string>
 </resources>
