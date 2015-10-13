@@ -115,7 +115,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             // Start monitor
             ((Button) findViewById(R.id.button)).setText(R.string.stopLabel);
             startTimer();
-            bindService(intent, mConnection, BIND_AUTO_CREATE);
+            mBound = bindService(intent, mConnection, BIND_AUTO_CREATE);
         } else {
             ((Button) findViewById(R.id.button)).setText(R.string.startLabel);
             stopTimer();
