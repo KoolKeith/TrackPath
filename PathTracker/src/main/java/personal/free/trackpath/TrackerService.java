@@ -14,6 +14,9 @@ import android.widget.Toast;
 
 import java.util.Date;
 
+import personal.free.trackpath.db.DBHelper;
+import personal.free.trackpath.db.Data;
+
 /**
  * Monitor GPS and update internal information on elapsed path.
  *
@@ -31,6 +34,7 @@ public class TrackerService extends Service implements LocationListener {
     private double maxAlt;
     private double altD;
     private Location lastLocation;
+    private DBHelper dbHelper;
 
     public boolean isRunning() {
         return isRunning;
@@ -101,6 +105,12 @@ public class TrackerService extends Service implements LocationListener {
         altD = (maxAlt - minAlt) / 1000.0;
 
         lastLocation = location;
+
+        Data tableDataItem = new Data(location.getLatitude(),
+                location.getLongitude(),
+                location.getAltitude());
+
+        DBHelper.getDB().AddItem(tableDataItem);
 
 //        File aFile = new File(outputFile);
 //        Document doc;

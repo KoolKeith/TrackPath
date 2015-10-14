@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import personal.free.trackpath.db.DBHelper;
+
 /**
  * A simple main window with the initialization button and position visualization.
  *
@@ -28,6 +30,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TrackerService mTrackerService;
     private boolean mBound = false;
     private Timer timer;
+    private DBHelper dbHelper;
 
 //    @SuppressLint("SimpleDateFormat")
 //    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
@@ -41,9 +44,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         intent = new Intent(this.getApplicationContext(), TrackerService.class);
         setContentView(R.layout.activity_main);
         findViewById(R.id.button).setOnClickListener(this);
+        dbHelper = new DBHelper(this);
     }
 
     @Override
@@ -102,6 +107,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             // TODO Custom dialog to specify the output file location.
+
             return true;
         }
 
@@ -129,8 +135,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            TrackerService.LocalBinder binder = (TrackerService.LocalBinder) service;
-            mTrackerService = binder.getService();
+            mTrackerService = ((TrackerService.LocalBinder) service).getService();
             mBound = true;
         }
 
