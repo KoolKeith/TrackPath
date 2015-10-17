@@ -1,5 +1,6 @@
 package personal.free.trackpath;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +13,21 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import personal.free.trackpath.db.DBHelper;
 import personal.free.trackpath.db.Data;
@@ -25,6 +40,10 @@ public class TrackerService extends Service implements LocationListener {
     private final IBinder mBinder = new LocalBinder();
 
     private boolean isRunning = false;
+    private static String outputFile = "/storage/sdcard/Download/a.xml";
+
+    @SuppressLint("SimpleDateFormat")
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     private LocationManager locationManager;
     private Date startTime;
@@ -35,6 +54,14 @@ public class TrackerService extends Service implements LocationListener {
     private double altD;
     private Location lastLocation;
     private DBHelper dbHelper;
+
+    public static void setOutputFile(String outputFile) {
+        TrackerService.outputFile = outputFile;
+    }
+
+    public static String getOutputFile() {
+        return outputFile;
+    }
 
     public boolean isRunning() {
         return isRunning;
@@ -111,37 +138,40 @@ public class TrackerService extends Service implements LocationListener {
                 location.getAltitude());
 
         DBHelper.getDB().AddItem(tableDataItem);
+        writePosition(location, curDate);
+    }
 
-//        File aFile = new File(outputFile);
-//        Document doc;
-//        try {
-//            if (aFile.exists()) {
-//                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(outputFile);
-//            } else {
-//                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-//                doc.appendChild(doc.createElement("positions"));
-//
-//            }
-//        } catch (SAXException | IOException | ParserConfigurationException e) {
-//            Log.e("onLocationChanged", e.getMessage());
-//            return;
-//        }
-//
-//        // Update archive xml
-//        Element root = doc.getDocumentElement();
-//        Element pos = doc.createElement("position");
-//        pos.setAttribute("date", sdf.format(curDate));
-//        pos.setAttribute("lon", Double.toString(location.getLongitude()));
-//        pos.setAttribute("lat", Double.toString(location.getLatitude()));
-//        pos.setAttribute("alt", Double.toString(location.getAltitude()));
-//        root.appendChild(pos);
-//
-//        try {
-//            TransformerFactory.newInstance().newTransformer()
-//                    .transform(new DOMSource(doc), new StreamResult(outputFile));
-//        } catch (TransformerException e) {
-//            Log.e("onLocationChanged", e.getMessage());
-//        }
+    public static void writePosition(Location location, Date curDate) {
+        File aFile = new File(outputFile);
+        Document doc;
+        try {
+            if (aFile.exists()) {
+                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse("file://"+outputFile);
+            } else {
+                doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+                doc.appendChild(doc.createElement("positions"));
+
+            }
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            Log.e("onLocationChanged", e.getMessage());
+            return;
+        }
+
+        // Update archive xml
+        Element root = doc.getDocumentElement();
+        Element pos = doc.createElement("position");
+        pos.setAttribute("date", sdf.format(curDate));
+        pos.setAttribute("lon", Double.toString(location.getLongitude()));
+        pos.setAttribute("lat", Double.toString(location.getLatitude()));
+        pos.setAttribute("alt", Double.toString(location.getAltitude()));
+        root.appendChild(pos);
+
+        try {
+            TransformerFactory.newInstance().newTransformer()
+                    .transform(new DOMSource(doc), new StreamResult(outputFile));
+        } catch (TransformerException e) {
+            Log.e("onLocationChanged", e.getMessage());
+        }
     }
 
     @Override

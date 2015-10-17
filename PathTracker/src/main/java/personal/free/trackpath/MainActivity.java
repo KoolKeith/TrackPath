@@ -21,29 +21,33 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import personal.free.trackpath.db.DBHelper;
+import personal.free.trackpath.db.Paths;
 
 /**
  * A simple main window with the initialization button and position visualization.
  *
  */
 public class MainActivity extends Activity implements View.OnClickListener {
+    private static MainActivity activity;
+    public static MainActivity getActivity() {
+        return activity;
+    }
+
     private TrackerService mTrackerService;
     private boolean mBound = false;
     private Timer timer;
     private DBHelper dbHelper;
 
-//    @SuppressLint("SimpleDateFormat")
-//    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
     @SuppressLint("SimpleDateFormat")
     private final SimpleDateFormat tdf = new SimpleDateFormat("HH:mm:ss");
     private final NumberFormat nf = new DecimalFormat("#0.000");
     private final NumberFormat nfm = new DecimalFormat("#0.##");
-//    private final String outputFile = "/storage/sdcard/Download/a.xml";
     private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activity = this;
 
         intent = new Intent(this.getApplicationContext(), TrackerService.class);
         setContentView(R.layout.activity_main);
@@ -106,7 +110,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            // TODO Custom dialog to specify the output file location.
+            // Custom dialog to specify the output file location.
+            SettingsDialog settingsDialog = new SettingsDialog(this);
+            settingsDialog.setOutFolder(TrackerService.getOutputFile());
+            settingsDialog.show();
 
             return true;
         }
@@ -120,6 +127,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (((Button) findViewById(R.id.button)).getText().toString().equals("Start")) {
             // Start monitor
             ((Button) findViewById(R.id.button)).setText(R.string.stopLabel);
+            DBHelper.getDB().AddItem(new Paths(new Date()));
             startTimer();
             mBound = bindService(intent, mConnection, BIND_AUTO_CREATE);
         } else {

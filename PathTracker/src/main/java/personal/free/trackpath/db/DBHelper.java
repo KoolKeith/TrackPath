@@ -25,7 +25,7 @@ import java.util.List;
 public class DBHelper extends OrmLiteSqliteOpenHelper {
 
     public static final String DB_NAME = "tracks";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 3;
 
     private static DBHelper dbHelper;
     public static DBHelper getDB() { return dbHelper; }

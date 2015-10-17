@@ -4,6 +4,8 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.util.Date;
+
 /**
  * Store paths start timestamp.
  *
@@ -13,13 +15,13 @@ import com.j256.ormlite.table.DatabaseTable;
 public class Paths {
     @DatabaseField(generatedId = true,dataType = DataType.LONG)
     private long Id;
-    @DatabaseField(dataType = DataType.DATE_TIME, canBeNull = false)
-    private long StartPathTime;
+    @DatabaseField(dataType = DataType.DATE_LONG, canBeNull = false)
+    private Date StartPathTime;
 
     public Paths() {
     }
 
-    public Paths(long startPathTime) {
+    public Paths(Date startPathTime) {
         StartPathTime = startPathTime;
     }
 
@@ -31,11 +33,11 @@ public class Paths {
         Id = id;
     }
 
-    public long getStartPathTime() {
+    public Date getStartPathTime() {
         return StartPathTime;
     }
 
-    public void setStartPathTime(long startPathTime) {
+    public void setStartPathTime(Date startPathTime) {
         StartPathTime = startPathTime;
     }
 

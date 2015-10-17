@@ -8,4 +8,7 @@
     <string name="label_altD">Max altitude difference (m)</string>
     <string name="startLabel">Start</string>
     <string name="stopLabel">Stop</string>
+    <string name="outfldLabel">Output folder</string>
+    <string name="ok_label">Ok</string>
+    <string name="cancel_label">Cancel</string>
 </resources>
