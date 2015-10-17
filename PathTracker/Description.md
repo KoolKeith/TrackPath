@@ -1,6 +1,7 @@
 ## Database structure
 
-The application stores the location and path information in an internal database.
+The application stores the location and path information in an internal database. The database management and operation are
+obtained from the [ormlite](http://ormlite.com/) library.
 
 The database is composed of the following tables:
 <ul>
