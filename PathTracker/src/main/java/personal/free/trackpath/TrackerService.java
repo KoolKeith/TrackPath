@@ -37,23 +37,23 @@ import personal.free.trackpath.db.Data;
  *
  */
 public class TrackerService extends Service implements LocationListener {
-    private final IBinder mBinder = new LocalBinder();
 
-    private boolean isRunning = false;
     private static String outputFile = "/storage/sdcard/Download/a.xml";
 
     @SuppressLint("SimpleDateFormat")
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
+    private final IBinder mBinder = new LocalBinder();
+    private boolean isRunning = false;
+
     private LocationManager locationManager;
+    private Location lastLocation;
     private Date startTime;
     private long timeDiff;
     private double totPath;
     private double minAlt;
     private double maxAlt;
     private double altD;
-    private Location lastLocation;
-    private DBHelper dbHelper;
 
     public static void setOutputFile(String outputFile) {
         TrackerService.outputFile = outputFile;
@@ -78,13 +78,12 @@ public class TrackerService extends Service implements LocationListener {
     @Override
     public void onCreate() {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0L, this);
         startTime = new Date();
         totPath = 0.0;
         minAlt = 1e30;
         maxAlt = -1e30;
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0L, this);
         isRunning = true;
-
     }
 
     @Override
@@ -93,8 +92,6 @@ public class TrackerService extends Service implements LocationListener {
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
-//                // TODO Store path info to db.
-//
 //            }
 //        }).start();
 
@@ -141,7 +138,7 @@ public class TrackerService extends Service implements LocationListener {
         writePosition(location, curDate);
     }
 
-    public static void writePosition(Location location, Date curDate) {
+    private void writePosition(Location location, Date curDate) {
         File aFile = new File(outputFile);
         Document doc;
         try {

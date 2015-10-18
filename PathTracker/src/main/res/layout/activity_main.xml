@@ -19,7 +19,8 @@
         android:id="@+id/button"
         android:layout_gravity="bottom"
         android:layout_above="@+id/textView"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="onClick" />
 
     <TextView
         android:layout_width="wrap_content"

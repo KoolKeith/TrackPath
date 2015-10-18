@@ -19,6 +19,7 @@ public class Paths {
     private Date StartPathTime;
 
     public Paths() {
+        StartPathTime = new Date();
     }
 
     public Paths(Date startPathTime) {

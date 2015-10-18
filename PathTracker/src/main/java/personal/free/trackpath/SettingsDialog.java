@@ -21,9 +21,9 @@ public class SettingsDialog extends Dialog implements View.OnClickListener {
     private EditText nameField;
     private String outFolder;
 
-    public String getOutFolder() {
-        return outFolder;
-    }
+//    public String getOutFolder() {
+//        return outFolder;
+//    }
 
     public void setOutFolder(String outFolder) {
         this.outFolder = outFolder;

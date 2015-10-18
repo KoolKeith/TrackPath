@@ -1,14 +1,16 @@
 <resources>
-    <string name="app_name">TrackPath</string>
+    <string name="app_name" translatable="false">TrackPath</string>
 
-    <string name="main_label">--</string>
+    <string name="main_label" translatable="false">--</string>
     <string name="action_settings">Settings</string>
     <string name="label_dist">Distance (km)</string>
     <string name="label_elTime">Elapsed time</string>
     <string name="label_altD">Max altitude difference (m)</string>
-    <string name="startLabel">Start</string>
-    <string name="stopLabel">Stop</string>
+    <string name="startLabel" translatable="false">Start</string>
+    <string name="stopLabel" translatable="false">Stop</string>
     <string name="outfldLabel">Output folder</string>
     <string name="ok_label">Ok</string>
     <string name="cancel_label">Cancel</string>
+    <string name="history">History</string>
+    <string name="backLabel">Back</string>
 </resources>

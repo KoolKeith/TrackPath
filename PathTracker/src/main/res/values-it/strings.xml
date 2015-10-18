@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Impostazioni</string>
+    <string name="cancel_label">Annulla</string>
+    <string name="label_altD">Massima differenza di altitudine</string>
+    <string name="label_dist">Distanza (km)</string>
+    <string name="label_elTime">Tempo trascorso</string>
+    <string name="ok_label">Conferma</string>
+    <string name="outfldLabel">Nome del file di archivio</string>
+    <string name="history">Cronologia</string>
+</resources>

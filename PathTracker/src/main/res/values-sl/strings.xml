@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Nastavitve</string>
+    <string name="cancel_label">Prekliči</string>
+    <string name="label_altD">Razlika v višini</string>
+    <string name="label_dist">Razdalja (km)</string>
+    <string name="label_elTime">Čas</string>
+    <string name="ok_label">Potrdi</string>
+    <string name="outfldLabel">Ime arhivne datoteke</string>
+    <string name="history">Kronologija</string>
+</resources>
